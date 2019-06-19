@@ -1,0 +1,4 @@
+.ionide/
+bin/
+obj/
+nupkg/
