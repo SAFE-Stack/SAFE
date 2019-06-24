@@ -98,6 +98,27 @@ let run () =
     |> Async.RunSynchronously
     |> ignore
 
+let buildDocker tag =
+    let args = sprintf "build -t %s ." tag
+    runTool "docker" args "."
+
+let bundle () =
+    let serverDir = Path.combine deployDir "Server"
+    let clientDir = Path.combine deployDir "Client"
+    let publicDir = Path.combine clientDir "public"
+
+    let publishArgs = sprintf "publish -c Release -o \"%s\"" serverDir
+    runDotNet publishArgs serverPath
+
+    Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
+
+let dockerUser = "safe-template"
+let dockerImageName = "safe-template"
+let dockerFullName = sprintf "%s/%s" dockerUser dockerImageName
+
+let docker () =
+    buildDocker dockerFullName
+
 [<EntryPoint>]
 let main argv =
     match List.ofArray argv with
@@ -109,6 +130,12 @@ let main argv =
         clean ()
         installClient ()
         run ()
+    | [ "build"; "docker" ] ->
+        clean ()
+        installClient ()
+        build ()
+        bundle ()
+        docker ()
     | _ -> printfn """Usage: safe [command] 
 (Available commands: build, run)"""
     0 // return an integer exit code
