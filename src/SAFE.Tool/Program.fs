@@ -3,6 +3,9 @@
 open System
 open System.Diagnostics
 
+let clean () =
+    ()
+
 let build (target: string option) =
     let args =
         match target with
