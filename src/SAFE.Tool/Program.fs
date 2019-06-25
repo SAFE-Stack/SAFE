@@ -119,6 +119,25 @@ let dockerFullName = sprintf "%s/%s" dockerUser dockerImageName
 let docker () =
     buildDocker dockerFullName
 
+let runDocker () =
+    let docker = async {
+        let args = sprintf "run -it -p 8085:8085 %s" dockerFullName
+        runTool "docker" args "."
+    }
+    let browser = async {
+        do! Async.Sleep 5000
+        openBrowser "http://localhost:8085"
+    }
+
+    let tasks =
+        [ docker
+          browser ]
+
+    tasks
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> ignore
+
 [<EntryPoint>]
 let main argv =
     match List.ofArray argv with
@@ -136,6 +155,13 @@ let main argv =
         build ()
         bundle ()
         docker ()
+    | [ "run"; "docker" ] ->
+        clean ()
+        installClient ()
+        build ()
+        bundle ()
+        docker ()
+        runDocker ()
     | _ -> printfn """Usage: safe [command] 
 (Available commands: build, run)"""
     0 // return an integer exit code
