@@ -98,6 +98,44 @@ let run () =
     |> Async.RunSynchronously
     |> ignore
 
+type Config =
+    { Docker : bool }
+
+module Config =
+    open Thoth.Json.Net
+    let camelCase = true
+
+    let parse raw =
+        Decode.Auto.unsafeFromString<Config> (raw, camelCase)
+
+    let format (config: Config) =
+        Encode.Auto.toString(1, config, camelCase)
+
+    let defaultConfig =
+        { Docker = false }
+
+    let configFile = "./.config/safe.json"
+
+    let read () =
+        if File.exists configFile then
+            File.readAsString configFile
+            |> parse
+        else
+            defaultConfig
+
+    let save config =
+        File.writeString false configFile (format config)
+
+    let change f = read () |> f |> save
+
+    let check (f: Config -> bool) = read () |> f
+
+let addDocker () =
+    Config.change (fun x -> { x with Docker = true })
+
+let removeDocker () =
+    Config.change (fun x -> { x with Docker = false })
+
 let buildDocker tag =
     let args = sprintf "build -t %s ." tag
     runTool "docker" args "."
@@ -149,19 +187,29 @@ let main argv =
         clean ()
         installClient ()
         run ()
+    | [ "add"; "docker" ] ->
+        addDocker ()
+    | [ "remove"; "docker" ] ->
+        removeDocker ()
     | [ "build"; "docker" ] ->
-        clean ()
-        installClient ()
-        build ()
-        bundle ()
-        docker ()
+        if Config.check (fun c -> c.Docker) then
+            clean ()
+            installClient ()
+            build ()
+            bundle ()
+            docker ()
+        else
+            printfn "Docker not added to this project, run `docker add`"
     | [ "run"; "docker" ] ->
-        clean ()
-        installClient ()
-        build ()
-        bundle ()
-        docker ()
-        runDocker ()
+        if Config.check (fun c -> c.Docker) then
+            clean ()
+            installClient ()
+            build ()
+            bundle ()
+            docker ()
+            runDocker ()
+        else
+            printfn "Docker not added to this project, run `docker add`"
     | _ -> printfn """Usage: safe [command] 
-(Available commands: build, run)"""
+(Available commands: build, run, add, remove)"""
     0 // return an integer exit code

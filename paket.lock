@@ -3,6 +3,8 @@ NUGET
   remote: https://api.nuget.org/v3/index.json
     BlackFox.VsWhere (1.0)
       FSharp.Core (>= 4.2.3)
+    Fable.Core (3.0)
+      FSharp.Core (>= 4.5.2)
     Fake.Core.CommandLineParsing (5.15)
       FParsec (>= 1.0.3)
       FSharp.Core (>= 4.3.4)
@@ -710,3 +712,7 @@ NUGET
       System.Xml.ReaderWriter (>= 4.3)
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath (>= 4.3)
+    Thoth.Json.Net (3.5.1)
+      Fable.Core (>= 3.0 < 4.0)
+      FSharp.Core (>= 4.6.2)
+      Newtonsoft.Json (>= 11.0.2)
