@@ -7,3 +7,14 @@ nuget Fake.Core.Target
 nuget Fake.DotNet.Cli
 nuget Fake.IO.FileSystem
 nuget Thoth.Json.Net
+
+group Build
+    storage: none
+    source https://api.nuget.org/v3/index.json
+
+    nuget Fake.Core.ReleaseNotes
+    nuget Fake.Core.Target
+    nuget Fake.DotNet.Cli
+    nuget Fake.DotNet.Paket
+    nuget Fake.IO.FileSystem
+    nuget Fake.Tools.Git
