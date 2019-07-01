@@ -60,6 +60,7 @@ Target.create "Push" (fun _ ->
         { args with
                 PublishUrl = "https://www.nuget.org"
                 WorkingDir = nupkgDir
+                ToolPath = "paket"
         }
     )
 
