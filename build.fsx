@@ -19,6 +19,9 @@ Target.initEnvironment ()
 
 let toolName = "SAFE.Tool"
 let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
+let toolBin = "./src/SAFE.Tool/bin"
+
+let toolObj = "./src/SAFE.Tool/obj"
 let nupkgDir = Path.getFullName "./nupkg"
 
 let release = ReleaseNotes.load "RELEASE_NOTES.md"
@@ -28,7 +31,7 @@ let formattedRN =
     |> String.concat "\n"
 
 Target.create "Clean" (fun _ ->
-    Shell.cleanDirs [ nupkgDir ]
+    Shell.cleanDirs [ toolBin; toolObj; nupkgDir ]
 )
 
 Target.create "Pack" (fun _ ->
