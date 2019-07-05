@@ -114,7 +114,9 @@ module Config =
     let defaultConfig =
         { Docker = false }
 
-    let configFile = "./.config/safe.json"
+    let configDir = "./.config"
+
+    let configFile = Path.combine configDir "safe.json"
 
     let read () =
         if File.exists configFile then
@@ -124,16 +126,26 @@ module Config =
             defaultConfig
 
     let save config =
+        Directory.ensure configDir
         File.writeString false configFile (format config)
 
     let change f = read () |> f |> save
 
     let check (f: Config -> bool) = read () |> f
 
+let dockerfileContents = """FROM microsoft/dotnet:2.2-aspnetcore-runtime-alpine
+COPY /deploy /
+WORKDIR /Server
+EXPOSE 8085
+ENTRYPOINT [ "dotnet", "Server.dll" ]
+"""
+
 let addDocker () =
+    File.writeString false "Dockerfile" dockerfileContents
     Config.change (fun x -> { x with Docker = true })
 
 let removeDocker () =
+    File.delete "Dockerfile"
     Config.change (fun x -> { x with Docker = false })
 
 let buildDocker tag =
@@ -188,9 +200,15 @@ let main argv =
         installClient ()
         run ()
     | [ "add"; "docker" ] ->
-        addDocker ()
+        if Config.check (fun c -> c.Docker) then
+            printfn "Docker already added"
+        else
+            addDocker ()
     | [ "remove"; "docker" ] ->
-        removeDocker ()
+        if Config.check (fun c -> c.Docker) then
+            removeDocker ()
+        else
+            printfn "Docker not added"
     | [ "build"; "docker" ] ->
         if Config.check (fun c -> c.Docker) then
             clean ()
@@ -199,7 +217,7 @@ let main argv =
             bundle ()
             docker ()
         else
-            printfn "Docker not added to this project, run `docker add`"
+            printfn "Docker not added to this project, run `add docker`"
     | [ "run"; "docker" ] ->
         if Config.check (fun c -> c.Docker) then
             clean ()
@@ -209,7 +227,7 @@ let main argv =
             docker ()
             runDocker ()
         else
-            printfn "Docker not added to this project, run `docker add`"
+            printfn "Docker not added to this project, run `add docker`"
     | _ -> printfn """Usage: safe [command] 
 (Available commands: build, run, add, remove)"""
     0 // return an integer exit code
