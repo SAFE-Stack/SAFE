@@ -140,16 +140,22 @@ EXPOSE 8085
 ENTRYPOINT [ "dotnet", "Server.dll" ]
 """
 
+let createDockerfile () : IO.FileInfo =
+    let tmpPath = IO.Path.GetTempPath()
+    let dockerfile = Path.combine tmpPath "SAFE.Tool.Dockerfile"
+    if not (File.exists dockerfile) then
+        File.writeString false dockerfile dockerfileContents
+    IO.FileInfo dockerfile
+
 let addDocker () =
-    File.writeString false "Dockerfile" dockerfileContents
     Config.change (fun x -> { x with Docker = true })
 
 let removeDocker () =
-    File.delete "Dockerfile"
     Config.change (fun x -> { x with Docker = false })
 
 let buildDocker tag =
-    let args = sprintf "build -t %s ." tag
+    let fi = createDockerfile ()
+    let args = sprintf "build -f %s -t %s ." fi.FullName tag
     runTool "docker" args "."
 
 let bundle () =
