@@ -10,5 +10,9 @@
   <ItemGroup>
     <Compile Include="Program.fs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SAFE\SAFE.fsproj" />
+    <ProjectReference Include="..\SAFE.Docker\SAFE.Docker.fsproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
