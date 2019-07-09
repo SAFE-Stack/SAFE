@@ -12,4 +12,5 @@
     <ProjectReference Include="..\SAFE\SAFE.fsproj" />
   </ItemGroup>
 
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
