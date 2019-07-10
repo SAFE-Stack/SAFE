@@ -19,6 +19,12 @@ Target.initEnvironment ()
 
 let toolName = "SAFE.Tool"
 let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
+let safeProj = "./src/SAFE/SAFE.fsproj"
+let dockerProj = "./src/SAFE.Docker/SAFE.Docker.fsproj"
+let projsToPack = 
+    [ toolProj
+      safeProj
+      dockerProj ]
 let toolBin = "./src/SAFE.Tool/bin"
 
 let toolObj = "./src/SAFE.Tool/obj"
@@ -35,18 +41,18 @@ Target.create "Clean" (fun _ ->
 )
 
 Target.create "Pack" (fun _ ->
-    DotNet.pack
-        (fun args ->
-            { args with
+    let customParams = 
+        sprintf "/p:PackageVersion=%s /p:PackageReleaseNotes=\"%s\""
+            release.NugetVersion
+            formattedRN
+    for proj in projsToPack do
+        DotNet.pack
+            (fun args ->
+                { args with
                     OutputPath = Some nupkgDir
-                    Common =
-                        { args.Common with
-                            CustomParams =
-                                Some (sprintf "/p:PackageVersion=%s /p:PackageReleaseNotes=\"%s\""
-                                        release.NugetVersion
-                                        formattedRN) }
-            })
-        toolProj
+                    Common = { args.Common with CustomParams = Some customParams }
+                })
+            proj
 )
 
 Target.create "Install" (fun _ ->

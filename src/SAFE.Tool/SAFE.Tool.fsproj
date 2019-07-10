@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SAFE\SAFE.fsproj" />
     <ProjectReference Include="..\SAFE.Docker\SAFE.Docker.fsproj" />
+    <ProjectReference Include="..\SAFE.BuildScript\SAFE.BuildScript.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

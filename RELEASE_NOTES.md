@@ -1,3 +1,7 @@
+#### 0.0.3 - 10.07.2019
+
+* Release SAFE and SAFE.Docker NuGets
+
 #### 0.0.2 - 05.07.2019
 
 * Fix docker bugs
