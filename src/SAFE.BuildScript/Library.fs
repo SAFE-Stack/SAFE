@@ -2,7 +2,7 @@
 
 open Fake.IO
 
-let template = """#r "paket: groupref build //"
+let template = sprintf """#r "paket: groupref build //"
 #load "./.fake/build.fsx/intellisense.fsx"
 
 #if !FAKE
@@ -30,6 +30,8 @@ Target.create "Run" (fun _ ->
     SAFE.Core.run ()
 )
 
+%s
+
 open Fake.Core.TargetOperators
 
 "Clean"
@@ -40,11 +42,13 @@ open Fake.Core.TargetOperators
     ==> "InstallClient"
     ==> "Run"
 
+%s
+
 Target.runOrDefaultWithArguments "Build"
 """
 
-let add () =
-    File.writeString false "build.fsx" template
+let add (targets, operators) =
+    File.writeString false "build.fsx" (template targets operators)
     Config.change (fun x -> { x with BuildScript = true })
 
 let remove () =

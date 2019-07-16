@@ -17,7 +17,11 @@ let main argv =
         if Config.check (fun c -> c.BuildScript) then
             printfn "Build script already added"
         else
-            BuildScript.add ()
+            let targets, operators =
+                if Config.check (fun c -> c.Docker) then
+                    Docker.buildScriptTargets (), Docker.buildScriptOperators ()
+                else "", ""
+            BuildScript.add (targets, operators)
     | [ "remove"; "buildScript" ] ->
         if Config.check (fun c -> c.BuildScript) then
             BuildScript.remove ()

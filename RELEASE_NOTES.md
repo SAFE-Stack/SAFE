@@ -1,6 +1,6 @@
 #### 0.0.4 - 11.07.2019
 
-* SAFE nupkg as netstandard2.0
+* SAFE and SAFE.Docker nupkg as netstandard2.0
 
 #### 0.0.3 - 10.07.2019
 

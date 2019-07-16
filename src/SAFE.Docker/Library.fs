@@ -66,3 +66,23 @@ let runDocker () =
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore
+
+let buildScriptTargets () =
+    """Target.create "BundleDocker" (fun _ ->
+    SAFE.Docker.bundle ()
+)
+
+Target.create "BuildDocker" (fun _ ->
+    SAFE.Docker.docker ()
+)
+
+Target.create "RunDocker" (fun _ ->
+    SAFE.Docker.runDocker ()
+)
+"""
+
+let buildScriptOperators () =
+    """"Build" ==> "BundleDocker"
+"BundleDocker" ==> "BuildDocker"
+"BundleDocker" ==> "RunDocker"
+"""
