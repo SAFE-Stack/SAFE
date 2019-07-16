@@ -13,6 +13,16 @@ let main argv =
         clean ()
         installClient ()
         run ()
+    | [ "add"; "buildScript" ] ->
+        if Config.check (fun c -> c.BuildScript) then
+            printfn "Build script already added"
+        else
+            BuildScript.add ()
+    | [ "remove"; "buildScript" ] ->
+        if Config.check (fun c -> c.BuildScript) then
+            BuildScript.remove ()
+        else
+            printfn "Build script not added"
     | [ "add"; "docker" ] ->
         if Config.check (fun c -> c.Docker) then
             printfn "Docker already added"

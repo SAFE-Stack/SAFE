@@ -96,7 +96,8 @@ module Core =
         |> ignore
 
 type Config =
-    { Docker : bool }
+    { Docker : bool
+      BuildScript : bool }
 
 module Config =
     open Fake.IO
@@ -106,13 +107,14 @@ module Config =
     let camelCase = true
 
     let parse raw =
-        Decode.Auto.unsafeFromString<Config> (raw, camelCase)
+        Decode.Auto.fromString<Config> (raw, camelCase)
 
     let format (config: Config) =
         Encode.Auto.toString(1, config, camelCase)
 
     let defaultConfig =
-        { Docker = false }
+        { Docker = false
+          BuildScript = false }
 
     let configDir = "./.config"
 
@@ -120,8 +122,9 @@ module Config =
 
     let read () =
         if File.exists configFile then
-            File.readAsString configFile
-            |> parse
+            match File.readAsString configFile |> parse with
+            | Ok c -> c
+            | Error _ -> defaultConfig
         else
             defaultConfig
 
