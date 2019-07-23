@@ -96,8 +96,7 @@ module Core =
         |> ignore
 
 type Config =
-    { Docker : bool
-      BuildScript : bool }
+    { Plugins : string list }
 
 module Config =
     open Fake.IO
@@ -113,8 +112,7 @@ module Config =
         Encode.Auto.toString(1, config, camelCase)
 
     let defaultConfig =
-        { Docker = false
-          BuildScript = false }
+        { Plugins = [] }
 
     let configDir = "./.config"
 
@@ -134,4 +132,12 @@ module Config =
 
     let change f = read () |> f |> save
 
+    let addPlugin (plugin : string) = 
+        change (fun c -> { c with Plugins = plugin :: c.Plugins })
+
+    let removePlugin (plugin : string) =
+        change (fun c -> { c with Plugins = c.Plugins |> List.filter ((<>) plugin) })
+
     let check (f: Config -> bool) = read () |> f
+
+    let checkPlugin (plugin : string) = check (fun c -> c.Plugins |> List.contains plugin)

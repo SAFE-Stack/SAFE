@@ -20,12 +20,6 @@ let createDockerfile () : IO.FileInfo =
         File.writeString false dockerfile dockerfileContents
     IO.FileInfo dockerfile
 
-let addDocker () =
-    Config.change (fun x -> { x with Docker = true })
-
-let removeDocker () =
-    Config.change (fun x -> { x with Docker = false })
-
 let buildDocker tag =
     let fi = createDockerfile ()
     let args = sprintf "build -f %s -t %s ." fi.FullName tag

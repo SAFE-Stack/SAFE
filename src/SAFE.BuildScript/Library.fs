@@ -49,8 +49,6 @@ Target.runOrDefaultWithArguments "Build"
 
 let add (targets, operators) =
     File.writeString false "build.fsx" (template targets operators)
-    Config.change (fun x -> { x with BuildScript = true })
 
 let remove () =
     File.delete "build.fsx"
-    Config.change (fun x -> { x with BuildScript = false })
