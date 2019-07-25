@@ -70,6 +70,16 @@ module Core =
             (Path.combine clientPath "Version.fs")
         runTool yarnTool "webpack-cli -p" directory
 
+    let bundle () =
+        let serverDir = Path.combine deployDir "Server"
+        let clientDir = Path.combine deployDir "Client"
+        let publicDir = Path.combine clientDir "public"
+
+        let publishArgs = sprintf "publish -c Release -o \"%s\"" serverDir
+        runDotNet publishArgs serverPath
+
+        Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
+
     let run () =
         let server = async {
             runDotNet "watch run" serverPath
@@ -141,3 +151,7 @@ module Config =
     let check (f: Config -> bool) = read () |> f
 
     let checkPlugin (plugin : string) = check (fun c -> c.Plugins |> List.contains plugin)
+
+type IRunnablePlugin =
+    abstract member Build : unit -> unit
+    abstract member Run : unit -> unit

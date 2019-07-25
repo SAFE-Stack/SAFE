@@ -1,5 +1,7 @@
 ﻿module SAFE.BuildScript
 
+open System
+
 open Fake.IO
 
 let template = sprintf """#r "paket: groupref build //"
@@ -26,6 +28,10 @@ Target.create "Build" (fun _ ->
     SAFE.Core.build ()
 )
 
+Target.create "Bundle" (fun _ ->
+    SAFE.Core.bundle ()
+)
+
 Target.create "Run" (fun _ ->
     SAFE.Core.run ()
 )
@@ -37,6 +43,7 @@ open Fake.Core.TargetOperators
 "Clean"
     ==> "InstallClient"
     ==> "Build"
+    ==> "Bundle"
 
 "Clean"
     ==> "InstallClient"
@@ -47,7 +54,36 @@ open Fake.Core.TargetOperators
 Target.runOrDefaultWithArguments "Build"
 """
 
-let add (targets, operators) =
+let buildScriptTargets (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    sprintf 
+        """Target.create "Build%s" (fun _ ->
+    SAFE.%s.Build ()
+)
+
+Target.create "Run%s" (fun _ ->
+    SAFE.%s.Run ()
+)
+"""
+        capital capital capital capital
+
+let buildScriptOperators (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    sprintf
+        """"Bundle" ==> "Build%s"
+"Bundle" ==> "Run%s"
+"""
+        capital capital
+
+let add (runnablePlugins) =
+    let targets =
+        runnablePlugins
+        |> List.map buildScriptTargets
+        |> String.concat Environment.NewLine
+    let operators =
+        runnablePlugins
+        |> List.map buildScriptOperators
+        |> String.concat Environment.NewLine
     File.writeString false "build.fsx" (template targets operators)
 
 let remove () =

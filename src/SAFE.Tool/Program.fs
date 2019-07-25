@@ -2,14 +2,18 @@
 
 open SAFE.Core
 
+let bundle () =
+    clean ()
+    installClient ()
+    build ()
+    bundle ()
+
 [<EntryPoint>]
 let main argv =
     match List.ofArray argv with
 
     | [ "build" ] -> 
-        clean ()
-        installClient ()
-        build ()
+        bundle ()
 
     | [ "run" ] ->
         clean ()
@@ -23,11 +27,9 @@ let main argv =
             Config.addPlugin plugin
             // TODO: dynamic load
             if plugin = "buildScript" then
-                let targets, operators =
-                    if Config.checkPlugin "docker" then
-                        Docker.buildScriptTargets (), Docker.buildScriptOperators ()
-                    else "", ""
-                BuildScript.add (targets, operators)
+                // TODO: dynamic check
+                let runnablePlugins = ["docker"]
+                BuildScript.add (runnablePlugins)
             printfn "%s plugin added" plugin
     
     | [ "remove"; plugin ] ->
@@ -44,11 +46,9 @@ let main argv =
         if Config.checkPlugin plugin then
             // TODO: dynamic load
             if plugin = "docker" then
-                clean ()
-                installClient ()
-                build ()
-                Docker.bundle ()
-                Docker.docker ()
+                let runnable = Docker() :> IRunnablePlugin
+                bundle ()
+                runnable.Build ()
             else
                 printfn "%s plugin is not buildable" plugin
         else
@@ -58,12 +58,9 @@ let main argv =
         if Config.checkPlugin plugin then
             // TODO: dynamic load
             if plugin = "docker" then
-                clean ()
-                installClient ()
-                build ()
-                Docker.bundle ()
-                Docker.docker ()
-                Docker.runDocker ()
+                let runnable = Docker() :> IRunnablePlugin
+                bundle ()
+                runnable.Run ()
             else
                 printfn "%s plugin is not runnable" plugin
         else
