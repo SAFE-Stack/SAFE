@@ -1,5 +1,8 @@
 ﻿module SAFE.Tool
 
+open System
+open System.Reflection
+
 open SAFE.Core
 
 let bundle () =
@@ -7,6 +10,15 @@ let bundle () =
     installClient ()
     build ()
     bundle ()
+
+let loadPlugin (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    let assemblyName = sprintf "SAFE.%s" capital
+    let assembly = Assembly.Load assemblyName
+    let iRunnablePluginType = typeof<IRunnablePlugin>
+    assembly.GetTypes()
+    |> Array.tryFind iRunnablePluginType.IsAssignableFrom
+    |> Option.map (fun typ -> Activator.CreateInstance typ :?> IRunnablePlugin)
 
 [<EntryPoint>]
 let main argv =
@@ -44,24 +56,22 @@ let main argv =
 
     | [ "build"; plugin ] ->
         if Config.checkPlugin plugin then
-            // TODO: dynamic load
-            if plugin = "docker" then
-                let runnable = Docker() :> IRunnablePlugin
+            match loadPlugin plugin with
+            | Some runnable ->
                 bundle ()
                 runnable.Build ()
-            else
+            | None ->
                 printfn "%s plugin is not buildable" plugin
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "run"; plugin ] ->
         if Config.checkPlugin plugin then
-            // TODO: dynamic load
-            if plugin = "docker" then
-                let runnable = Docker() :> IRunnablePlugin
+            match loadPlugin plugin with
+            | Some runnable ->
                 bundle ()
                 runnable.Run ()
-            else
+            | None ->
                 printfn "%s plugin is not runnable" plugin
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
