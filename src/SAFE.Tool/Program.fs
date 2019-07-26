@@ -13,8 +13,11 @@ let bundle () =
 
 let loadPlugin (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-    let assemblyName = sprintf "SAFE.%s" capital
-    let assembly = Assembly.Load assemblyName
+    let assemblyPath = 
+        sprintf "packages/build/SAFE.%s/lib/netstandard2.0/SAFE.%s.dll"
+            capital
+            capital
+    let assembly = Assembly.LoadFrom assemblyPath
     let iRunnablePluginType = typeof<IRunnablePlugin>
     assembly.GetTypes()
     |> Array.tryFind iRunnablePluginType.IsAssignableFrom

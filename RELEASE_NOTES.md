@@ -1,3 +1,7 @@
+#### 0.0.5 - 11.07.2019
+
+* SAFE.Docker loaded dynamically
+
 #### 0.0.4 - 11.07.2019
 
 * SAFE and SAFE.Docker nupkg as netstandard2.0
