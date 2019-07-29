@@ -21,10 +21,12 @@ let toolName = "SAFE.Tool"
 let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
 let safeProj = "./src/SAFE/SAFE.fsproj"
 let dockerProj = "./src/SAFE.Docker/SAFE.Docker.fsproj"
+let buildScriptProj = "./src/SAFE.BuildScript/SAFE.BuildScript.fsproj"
 let projsToPack = 
     [ toolProj
       safeProj
-      dockerProj ]
+      dockerProj
+      buildScriptProj ]
 let toolBin = "./src/SAFE.Tool/bin"
 
 let toolObj = "./src/SAFE.Tool/obj"

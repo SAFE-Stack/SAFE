@@ -11,17 +11,6 @@ let bundle () =
     build ()
     bundle ()
 
-let loadBasePlugin (plugin : string) =
-    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-    let assemblyPath = 
-        sprintf "SAFE.%s"
-            capital
-    let assembly = Assembly.Load assemblyPath
-    let iSAFEPlugin = typeof<ISAFEPlugin>
-    assembly.GetTypes()
-    |> Array.tryFind iSAFEPlugin.IsAssignableFrom
-    |> Option.map (fun typ -> Activator.CreateInstance typ :?> ISAFEPlugin)
-
 let loadPlugin (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let assemblyPath = 
@@ -29,10 +18,10 @@ let loadPlugin (plugin : string) =
             capital
             capital
     let assembly = Assembly.LoadFrom assemblyPath
-    let iRunnablePluginType = typeof<IRunnablePlugin>
+    let iRunnablePluginType = typeof<ISAFEPlugin>
     assembly.GetTypes()
     |> Array.tryFind iRunnablePluginType.IsAssignableFrom
-    |> Option.map (fun typ -> Activator.CreateInstance typ :?> IRunnablePlugin)
+    |> Option.map (fun typ -> Activator.CreateInstance typ :?> ISAFEPlugin)
 
 [<EntryPoint>]
 let main argv =
@@ -50,7 +39,7 @@ let main argv =
         if Config.checkPlugin plugin then
             printfn "%s plugin already added" plugin
         else
-            match loadBasePlugin plugin with
+            match loadPlugin plugin with
             | Some p ->
                 p.Add (Config.read ())
                 Config.addPlugin plugin
@@ -60,7 +49,7 @@ let main argv =
 
     | [ "remove"; plugin ] ->
         if Config.checkPlugin plugin then
-            match loadBasePlugin plugin with
+            match loadPlugin plugin with
             | Some p ->
                 p.Remove (Config.read ())
                 Config.removePlugin plugin
@@ -73,22 +62,26 @@ let main argv =
     | [ "build"; plugin ] ->
         if Config.checkPlugin plugin then
             match loadPlugin plugin with
-            | Some runnable ->
+            | Some (:? ISAFERunnablePlugin as runnable) ->
                 bundle ()
                 runnable.Build ()
-            | None ->
+            | Some _ ->
                 printfn "%s plugin is not buildable" plugin
+            | None ->
+                printfn "%s is not a valid SAFE plugin" plugin
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "run"; plugin ] ->
         if Config.checkPlugin plugin then
             match loadPlugin plugin with
-            | Some runnable ->
+            | Some (:? ISAFERunnablePlugin as runnable) ->
                 bundle ()
                 runnable.Run ()
-            | None ->
+            | Some _ ->
                 printfn "%s plugin is not runnable" plugin
+            | None ->
+                printfn "%s is not a valid SAFE plugin" plugin
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 

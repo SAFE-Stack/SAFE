@@ -53,7 +53,14 @@ type Docker() =
         |> Async.RunSynchronously
         |> ignore
 
-    interface IRunnablePlugin with
+    interface ISAFEPlugin with
+        member this.Add (config: Config) = 
+            ()
+
+        member this.Remove (config: Config) = 
+            ()
+
+    interface ISAFERunnablePlugin with
         member this.Build () = 
             docker ()
 

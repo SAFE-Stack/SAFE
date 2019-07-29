@@ -156,6 +156,6 @@ type ISAFEPlugin =
     abstract member Add : Config -> unit
     abstract member Remove : Config -> unit
 
-type IRunnablePlugin =
+type ISAFERunnablePlugin =
     abstract member Build : unit -> unit
     abstract member Run : unit -> unit
