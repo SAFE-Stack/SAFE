@@ -152,6 +152,10 @@ module Config =
 
     let checkPlugin (plugin : string) = check (fun c -> c.Plugins |> List.contains plugin)
 
+type ISAFEPlugin =
+    abstract member Add : Config -> unit
+    abstract member Remove : Config -> unit
+
 type IRunnablePlugin =
     abstract member Build : unit -> unit
     abstract member Run : unit -> unit

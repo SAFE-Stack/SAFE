@@ -1,90 +1,100 @@
-﻿module SAFE.BuildScript
+﻿namespace SAFE
 
 open System
 
 open Fake.IO
 
-let template = sprintf """#r "paket: groupref build //"
-#load "./.fake/build.fsx/intellisense.fsx"
+type BuildScript () =
+    let template = sprintf """#r "paket: groupref build //"
+    #load "./.fake/build.fsx/intellisense.fsx"
 
-#if !FAKE
-#r "netstandard"
-#r "Facades/netstandard" // https://github.com/ionide/ionide-vscode-fsharp/issues/839#issuecomment-396296095
-#endif
+    #if !FAKE
+    #r "netstandard"
+    #r "Facades/netstandard" // https://github.com/ionide/ionide-vscode-fsharp/issues/839#issuecomment-396296095
+    #endif
 
-open Fake.Core
+    open Fake.Core
 
-Target.initEnvironment ()
+    Target.initEnvironment ()
 
-Target.create "Clean" (fun _ ->
-    SAFE.Core.clean ()
-)
+    Target.create "Clean" (fun _ ->
+        SAFE.Core.clean ()
+    )
 
-Target.create "InstallClient" (fun _ ->
-    SAFE.Core.installClient ()
-)
+    Target.create "InstallClient" (fun _ ->
+        SAFE.Core.installClient ()
+    )
 
-Target.create "Build" (fun _ ->
-    SAFE.Core.build ()
-)
+    Target.create "Build" (fun _ ->
+        SAFE.Core.build ()
+    )
 
-Target.create "Bundle" (fun _ ->
-    SAFE.Core.bundle ()
-)
+    Target.create "Bundle" (fun _ ->
+        SAFE.Core.bundle ()
+    )
 
-Target.create "Run" (fun _ ->
-    SAFE.Core.run ()
-)
+    Target.create "Run" (fun _ ->
+        SAFE.Core.run ()
+    )
 
-%s
+    %s
 
-open Fake.Core.TargetOperators
+    open Fake.Core.TargetOperators
 
-"Clean"
-    ==> "InstallClient"
-    ==> "Build"
-    ==> "Bundle"
+    "Clean"
+        ==> "InstallClient"
+        ==> "Build"
+        ==> "Bundle"
 
-"Clean"
-    ==> "InstallClient"
-    ==> "Run"
+    "Clean"
+        ==> "InstallClient"
+        ==> "Run"
 
-%s
+    %s
 
-Target.runOrDefaultWithArguments "Build"
-"""
+    Target.runOrDefaultWithArguments "Build"
+    """
 
-let buildScriptTargets (plugin : string) =
-    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-    sprintf 
-        """Target.create "Build%s" (fun _ ->
-    SAFE.%s.Build ()
-)
+    let buildScriptTargets (plugin : string) =
+        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+        sprintf 
+            """Target.create "Build%s" (fun _ ->
+        SAFE.%s.Build ()
+    )
 
-Target.create "Run%s" (fun _ ->
-    SAFE.%s.Run ()
-)
-"""
-        capital capital capital capital
+    Target.create "Run%s" (fun _ ->
+        SAFE.%s.Run ()
+    )
+    """
+            capital capital capital capital
 
-let buildScriptOperators (plugin : string) =
-    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-    sprintf
-        """"Bundle" ==> "Build%s"
-"Bundle" ==> "Run%s"
-"""
-        capital capital
+    let buildScriptOperators (plugin : string) =
+        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+        sprintf
+            """"Bundle" ==> "Build%s"
+    "Bundle" ==> "Run%s"
+    """
+            capital capital
 
-let add (runnablePlugins) =
-    let targets =
-        runnablePlugins
-        |> List.map buildScriptTargets
-        |> String.concat Environment.NewLine
-    let operators =
-        runnablePlugins
-        |> List.map buildScriptOperators
-        |> String.concat Environment.NewLine
-    File.writeString false "build.fsx" (template targets operators)
+    let add (config: Config) =
+        // TODO: Check which plugins are runnable
+        let runnablePlugins = config.Plugins
+        let targets =
+            runnablePlugins
+            |> List.map buildScriptTargets
+            |> String.concat Environment.NewLine
+        let operators =
+            runnablePlugins
+            |> List.map buildScriptOperators
+            |> String.concat Environment.NewLine
+        File.writeString false "build.fsx" (template targets operators)
 
-let remove () =
-    File.delete "build.fsx"
+    let remove () =
+        File.delete "build.fsx"
+        
+    interface ISAFEPlugin with
+        member this.Add (config: Config) = 
+            add config
+
+        member this.Remove (config: Config) = 
+            remove ()

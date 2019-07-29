@@ -11,6 +11,17 @@ let bundle () =
     build ()
     bundle ()
 
+let loadBasePlugin (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    let assemblyPath = 
+        sprintf "SAFE.%s"
+            capital
+    let assembly = Assembly.Load assemblyPath
+    let iSAFEPlugin = typeof<ISAFEPlugin>
+    assembly.GetTypes()
+    |> Array.tryFind iSAFEPlugin.IsAssignableFrom
+    |> Option.map (fun typ -> Activator.CreateInstance typ :?> ISAFEPlugin)
+
 let loadPlugin (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let assemblyPath = 
@@ -39,21 +50,23 @@ let main argv =
         if Config.checkPlugin plugin then
             printfn "%s plugin already added" plugin
         else
-            Config.addPlugin plugin
-            // TODO: dynamic load
-            if plugin = "buildScript" then
-                // TODO: dynamic check
-                let runnablePlugins = ["docker"]
-                BuildScript.add (runnablePlugins)
-            printfn "%s plugin added" plugin
-    
+            match loadBasePlugin plugin with
+            | Some p ->
+                p.Add (Config.read ())
+                Config.addPlugin plugin
+                printfn "%s plugin added" plugin
+            | None ->
+                printfn "%s is not a valid SAFE plugin" plugin
+
     | [ "remove"; plugin ] ->
         if Config.checkPlugin plugin then
-            Config.removePlugin plugin
-            // TODO: dynamic load
-            if plugin = "buildScript" then
-                BuildScript.remove ()
-            printfn "%s plugin removed" plugin
+            match loadBasePlugin plugin with
+            | Some p ->
+                p.Remove (Config.read ())
+                Config.removePlugin plugin
+                printfn "%s plugin removed" plugin
+            | None ->
+                printfn "%s is not a valid SAFE plugin" plugin
         else
             printfn "%s plugin not added" plugin
 
