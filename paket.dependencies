@@ -12,6 +12,7 @@ nuget Fake.DotNet.Cli
     nuget Microsoft.Build.Utilities.Core < 16
 nuget Fake.IO.FileSystem
 nuget Thoth.Json.Net
+nuget Paket.Core
 
 group Build
     framework: netstandard2.0

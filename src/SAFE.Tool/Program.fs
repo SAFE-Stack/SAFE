@@ -11,6 +11,24 @@ let bundle () =
     build ()
     bundle ()
 
+let addPluginWithPaket (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    let paket = Paket.Dependencies.Locate()
+    let package = sprintf "SAFE.%s" capital
+    let paketGroup = "build"
+    printfn "Adding %s package to Paket %s group..."  package paketGroup
+    paket.Add(Some paketGroup, package)
+    printfn "Package %s added to Paket %s group" package paketGroup
+
+let removePluginWithPaket (plugin : string) =
+    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+    let paket = Paket.Dependencies.Locate()
+    let package = sprintf "SAFE.%s" capital
+    let paketGroup = "build"
+    printfn "Removing %s package from Paket %s group..."  package paketGroup
+    paket.Remove(Some paketGroup, package)
+    printfn "Package %s removed from Paket %s group" package paketGroup
+
 let loadPlugin (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let assemblyPath = 
@@ -39,6 +57,7 @@ let main argv =
         if Config.checkPlugin plugin then
             printfn "%s plugin already added" plugin
         else
+            addPluginWithPaket plugin
             match loadPlugin plugin with
             | Some p ->
                 p.Add (Config.read ())
@@ -53,6 +72,7 @@ let main argv =
             | Some p ->
                 p.Remove (Config.read ())
                 Config.removePlugin plugin
+                removePluginWithPaket plugin
                 printfn "%s plugin removed" plugin
             | None ->
                 printfn "%s is not a valid SAFE plugin" plugin
