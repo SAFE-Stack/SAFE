@@ -1,3 +1,7 @@
+#### 0.0.6 - 12.08.2019
+
+* Update SAFE.BuildScript
+
 #### 0.0.5 - 11.07.2019
 
 * SAFE.Docker loaded dynamically
