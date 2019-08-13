@@ -159,3 +159,6 @@ type ISAFEPlugin =
 type ISAFERunnablePlugin =
     abstract member Build : unit -> unit
     abstract member Run : unit -> unit
+
+type ISAFEDeployablePlugin =
+    abstract member Deploy : unit -> unit

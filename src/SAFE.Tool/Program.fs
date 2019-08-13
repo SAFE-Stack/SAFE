@@ -41,6 +41,7 @@ let loadPlugin (plugin : string) =
     |> Array.tryFind iRunnablePluginType.IsAssignableFrom
     |> Option.map (fun typ -> Activator.CreateInstance typ :?> ISAFEPlugin)
 
+
 [<EntryPoint>]
 let main argv =
     match List.ofArray argv with
@@ -100,6 +101,19 @@ let main argv =
                 runnable.Run ()
             | Some _ ->
                 printfn "%s plugin is not runnable" plugin
+            | None ->
+                printfn "%s is not a valid SAFE plugin" plugin
+        else
+            printfn "%s plugin not added to this project, run `add %s`" plugin plugin
+
+    | [ "deploy"; plugin ] ->
+        if Config.checkPlugin plugin then
+            match loadPlugin plugin with
+            | Some (:? ISAFEDeployablePlugin as deployable) ->
+                bundle ()
+                deployable.Deploy ()
+            | Some _ ->
+                printfn "%s plugin is not deployable" plugin
             | None ->
                 printfn "%s is not a valid SAFE plugin" plugin
         else
