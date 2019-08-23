@@ -1,0 +1,6 @@
+group AzureAppService
+    Fake.Core.Environment
+    Fake.Core.Trace
+    Fake.IO.Zip
+    Microsoft.Azure.Management.ResourceManager.Fluent
+    File: ArmHelper.fs
