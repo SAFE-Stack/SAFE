@@ -1,6 +1,7 @@
 source https://api.nuget.org/v3/index.json
 framework: netcoreapp3.0, netstandard2.0
 
+nuget McMaster.NETCore.Plugins
 nuget FSharp.Core
 nuget Fake.Core.ReleaseNotes
 nuget Fake.Core.Target

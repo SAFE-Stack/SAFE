@@ -35,7 +35,11 @@ let loadPlugin (plugin : string) =
         sprintf "packages/build/SAFE.%s/lib/netstandard2.0/SAFE.%s.dll"
             capital
             capital
-    let assembly = Assembly.LoadFrom assemblyPath
+    let loader = McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile(assemblyPath,
+     [| typeof<ISAFEPlugin>
+        typeof<ISAFERunnablePlugin>
+        typeof<ISAFEDeployablePlugin> |])
+    let assembly = loader.LoadDefaultAssembly()
     let iRunnablePluginType = typeof<ISAFEPlugin>
     assembly.GetTypes()
     |> Array.tryFind iRunnablePluginType.IsAssignableFrom
