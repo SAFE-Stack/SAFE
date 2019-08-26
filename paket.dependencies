@@ -13,12 +13,7 @@ nuget Fake.DotNet.Cli
 nuget Fake.IO.FileSystem
 nuget Thoth.Json.Net
 nuget Paket.Core
-
-group AzureAppService
-    source https://api.nuget.org/v3/index.json
-    storage: none
-    framework: netstandard2.0
-
+// azure app service
     nuget Fake.Core.Environment
     nuget Fake.Core.Trace
     nuget Fake.IO.Zip

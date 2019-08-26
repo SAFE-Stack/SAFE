@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\paket-files\azureappservice\CompositionalIT\fshelpers\src\FsHelpers\ArmHelper\ArmHelper.fs">
+    <Compile Include="..\..\paket-files\CompositionalIT\fshelpers\src\FsHelpers\ArmHelper\ArmHelper.fs">
       <Paket>True</Paket>
       <Link>paket-files/ArmHelper.fs</Link>
     </Compile>
