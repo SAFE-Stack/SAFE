@@ -1,3 +1,7 @@
+#### 0.0.7 - 25.10.2019
+
+* Add ISAFEDeployablePlugin
+
 #### 0.0.6 - 12.08.2019
 
 * Update SAFE.BuildScript
