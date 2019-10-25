@@ -1,5 +1,14 @@
 ﻿namespace SAFE
 
+type ISAFEPlugin = interface end
+
+type ISAFERunnablePlugin =
+    abstract member Build : unit -> unit
+    abstract member Run : unit -> unit
+
+type ISAFEDeployablePlugin =
+    abstract member Deploy : unit -> unit
+
 module Core =
     open Fake.Core
     open Fake.DotNet
@@ -61,14 +70,34 @@ module Core =
         runTool yarnTool "--version" directory
         runTool yarnTool "install --frozen-lockfile" directory
 
-    let build () =
-        runDotNet "build" serverPath
-        Shell.regexReplaceInFileWithEncoding
-            "let app = \".+\""
-           ("let app = \"" + release.NugetVersion + "\"")
-            System.Text.Encoding.UTF8
-            (Path.combine clientPath "Version.fs")
-        runTool yarnTool "webpack-cli -p" directory
+    let getPlugin (p: Fake.Core.TargetParameter) =
+        try
+            let plugin = p.Context.Arguments |> List.head
+            let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+            sprintf "SAFE.%s" capital |> Some
+        with _ -> None
+
+    let loadPlugin<'a> (name: string) : 'a option =
+        let assembly = System.Reflection.Assembly.Load name
+        let pluginType = typeof<'a>
+        assembly.GetTypes()
+        |> Array.tryFind pluginType.IsAssignableFrom
+        |> Option.map (fun typ -> System.Activator.CreateInstance typ :?> 'a)
+
+    let build (p: Fake.Core.TargetParameter) =
+        match getPlugin p with
+        | Some name ->
+            match loadPlugin<ISAFERunnablePlugin> name with
+            | Some p -> p.Build()
+            | None -> printfn "Not runnable!"
+        | None ->
+            runDotNet "build" serverPath
+            Shell.regexReplaceInFileWithEncoding
+                "let app = \".+\""
+               ("let app = \"" + release.NugetVersion + "\"")
+                System.Text.Encoding.UTF8
+                (Path.combine clientPath "Version.fs")
+            runTool yarnTool "webpack-cli -p" directory
 
     let bundle () =
         let serverDir = Path.combine deployDir "Server"
@@ -80,30 +109,43 @@ module Core =
 
         Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
 
-    let run () =
-        let server = async {
-            runDotNet "watch run" serverPath
-        }
-        let client = async {
-            runTool yarnTool "webpack-dev-server" directory
-        }
-        let browser = async {
-            do! Async.Sleep 5000
-            openBrowser "http://localhost:8080"
-        }
+    let run (p: Fake.Core.TargetParameter) =
+        match getPlugin p with
+        | Some name ->
+            match loadPlugin<ISAFERunnablePlugin> name with
+            | Some p -> p.Run()
+            | None -> printfn "Not runnable!"
+        | None ->
+            let server = async {
+                runDotNet "watch run" serverPath
+            }
+            let client = async {
+                runTool yarnTool "webpack-dev-server" directory
+            }
+            let browser = async {
+                do! Async.Sleep 5000
+                openBrowser "http://localhost:8080"
+            }
 
-        let vsCodeSession = Environment.hasEnvironVar "vsCodeSession"
-        let safeClientOnly = Environment.hasEnvironVar "safeClientOnly"
+            let vsCodeSession = Environment.hasEnvironVar "vsCodeSession"
+            let safeClientOnly = Environment.hasEnvironVar "safeClientOnly"
 
-        let tasks =
-            [ if not safeClientOnly then yield server
-              yield client
-              if not vsCodeSession then yield browser ]
+            let tasks =
+                [ if not safeClientOnly then yield server
+                  yield client
+                  if not vsCodeSession then yield browser ]
 
-        tasks
-        |> Async.Parallel
-        |> Async.RunSynchronously
-        |> ignore
+            tasks
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> ignore
+
+    let deploy (p: Fake.Core.TargetParameter) =
+        match getPlugin p with
+        | Some name ->
+            match loadPlugin<ISAFEDeployablePlugin> name with
+            | Some p -> p.Deploy ()
+            | None -> printfn "Not deployable!"
 
 type Config =
     { Plugins : string list }
@@ -151,29 +193,3 @@ module Config =
     let check (f: Config -> bool) = read () |> f
 
     let checkPlugin (plugin : string) = check (fun c -> c.Plugins |> List.contains plugin)
-
-type ISAFEPlugin =
-    abstract member Add : Config -> unit
-    abstract member Remove : Config -> unit
-
-type ISAFERunnablePlugin =
-    abstract member Build : unit -> unit
-    abstract member Run : unit -> unit
-
-type ISAFEDeployablePlugin =
-    abstract member Deploy : unit -> unit
-
-module Plugin =
-    let deploy (p: Fake.Core.TargetParameter) =
-        let plugin = p.Context.Arguments |> List.head
-        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-        let name = sprintf "SAFE.%s" capital
-        let assembly = System.Reflection.Assembly.Load name
-        let pluginType = typeof<ISAFEDeployablePlugin>
-        let plugin =
-            assembly.GetTypes()
-            |> Array.tryFind pluginType.IsAssignableFrom
-            |> Option.map (fun typ -> System.Activator.CreateInstance typ :?> ISAFEDeployablePlugin)
-        match plugin with
-        | Some p -> p.Deploy ()
-        | None -> printfn "Not deployable!"

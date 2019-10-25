@@ -1,7 +1,6 @@
 ﻿module SAFE.Tool
 
 open System
-open System.Reflection
 
 open SAFE.Core
 
@@ -29,25 +28,6 @@ let removePluginWithPaket (plugin : string) =
     paket.Remove(Some paketGroup, package)
     printfn "Package %s removed from Paket %s group" package paketGroup
 
-let loadPlugin (plugin : string) =
-    let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
-    let assemblyPath = 
-        sprintf "./packages/build/SAFE.%s/lib/netstandard2.0/SAFE.%s.dll"
-            capital
-            capital
-        |> Fake.IO.Path.getFullName
-    let loader = 
-        McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile
-         (assemblyPath,
-         [| typeof<ISAFEPlugin>
-            typeof<ISAFERunnablePlugin>
-            typeof<ISAFEDeployablePlugin> |])
-    let assembly = loader.LoadDefaultAssembly()
-    let iRunnablePluginType = typeof<ISAFEPlugin>
-    assembly.GetTypes()
-    |> Array.tryFind iRunnablePluginType.IsAssignableFrom
-    |> Option.map (fun typ -> Activator.CreateInstance typ :?> ISAFEPlugin)
-
 
 [<EntryPoint>]
 let main argv =
@@ -71,53 +51,27 @@ let main argv =
 
     | [ "remove"; plugin ] ->
         if Config.checkPlugin plugin then
-            match loadPlugin plugin with
-            | Some p ->
-                p.Remove (Config.read ())
-                Config.removePlugin plugin
-                removePluginWithPaket plugin
-                printfn "%s plugin removed" plugin
-            | None ->
-                printfn "%s is not a valid SAFE plugin" plugin
+            Config.removePlugin plugin
+            removePluginWithPaket plugin
+            printfn "%s plugin removed" plugin
         else
             printfn "%s plugin not added" plugin
 
     | [ "build"; plugin ] ->
         if Config.checkPlugin plugin then
-            match loadPlugin plugin with
-            | Some (:? ISAFERunnablePlugin as runnable) ->
-                bundle ()
-                runnable.Build ()
-            | Some _ ->
-                printfn "%s plugin is not buildable" plugin
-            | None ->
-                printfn "%s is not a valid SAFE plugin" plugin
+            System.Diagnostics.Process.Start("fake", sprintf "build -t Build -- %s" plugin).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "run"; plugin ] ->
         if Config.checkPlugin plugin then
-            match loadPlugin plugin with
-            | Some (:? ISAFERunnablePlugin as runnable) ->
-                bundle ()
-                runnable.Run ()
-            | Some _ ->
-                printfn "%s plugin is not runnable" plugin
-            | None ->
-                printfn "%s is not a valid SAFE plugin" plugin
+            System.Diagnostics.Process.Start("fake", sprintf "build -t Run -- %s" plugin).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "deploy"; plugin ] ->
         if Config.checkPlugin plugin then
-            match loadPlugin plugin with
-            | Some (:? ISAFEDeployablePlugin as deployable) ->
-                bundle ()
-                deployable.Deploy ()
-            | Some _ ->
-                printfn "%s plugin is not deployable" plugin
-            | None ->
-                printfn "%s is not a valid SAFE plugin" plugin
+            System.Diagnostics.Process.Start("fake", sprintf "build -t Deploy -- %s" plugin).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
