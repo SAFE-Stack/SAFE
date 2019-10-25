@@ -162,3 +162,18 @@ type ISAFERunnablePlugin =
 
 type ISAFEDeployablePlugin =
     abstract member Deploy : unit -> unit
+
+module Plugin =
+    let deploy (p: Fake.Core.TargetParameter) =
+        let plugin = p.Context.Arguments |> List.head
+        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+        let name = sprintf "SAFE.%s" capital
+        let assembly = System.Reflection.Assembly.Load name
+        let pluginType = typeof<ISAFEDeployablePlugin>
+        let plugin =
+            assembly.GetTypes()
+            |> Array.tryFind pluginType.IsAssignableFrom
+            |> Option.map (fun typ -> System.Activator.CreateInstance typ :?> ISAFEDeployablePlugin)
+        match plugin with
+        | Some p -> p.Deploy ()
+        | None -> printfn "Not deployable!"

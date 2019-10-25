@@ -1,3 +1,7 @@
+#### 0.0.8 - 25.10.2019
+
+* Add SAFE.Plugin.deploy
+
 #### 0.0.7 - 25.10.2019
 
 * Add ISAFEDeployablePlugin
