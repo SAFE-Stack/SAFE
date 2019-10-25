@@ -32,13 +32,16 @@ let removePluginWithPaket (plugin : string) =
 let loadPlugin (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let assemblyPath = 
-        sprintf "packages/build/SAFE.%s/lib/netstandard2.0/SAFE.%s.dll"
+        sprintf "./packages/build/SAFE.%s/lib/netstandard2.0/SAFE.%s.dll"
             capital
             capital
-    let loader = McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile(assemblyPath,
-     [| typeof<ISAFEPlugin>
-        typeof<ISAFERunnablePlugin>
-        typeof<ISAFEDeployablePlugin> |])
+        |> Fake.IO.Path.getFullName
+    let loader = 
+        McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile
+         (assemblyPath,
+         [| typeof<ISAFEPlugin>
+            typeof<ISAFERunnablePlugin>
+            typeof<ISAFEDeployablePlugin> |])
     let assembly = loader.LoadDefaultAssembly()
     let iRunnablePluginType = typeof<ISAFEPlugin>
     assembly.GetTypes()
@@ -63,13 +66,8 @@ let main argv =
             printfn "%s plugin already added" plugin
         else
             addPluginWithPaket plugin
-            match loadPlugin plugin with
-            | Some p ->
-                p.Add (Config.read ())
-                Config.addPlugin plugin
-                printfn "%s plugin added" plugin
-            | None ->
-                printfn "%s is not a valid SAFE plugin" plugin
+            Config.addPlugin plugin
+            printfn "%s plugin added" plugin
 
     | [ "remove"; plugin ] ->
         if Config.checkPlugin plugin then
