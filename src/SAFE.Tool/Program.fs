@@ -4,12 +4,6 @@ open System
 
 open SAFE.Core
 
-let bundle () =
-    clean ()
-    installClient ()
-    build ()
-    bundle ()
-
 let addPluginWithPaket (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let paket = Paket.Dependencies.Locate()
@@ -33,13 +27,6 @@ let removePluginWithPaket (plugin : string) =
 let main argv =
     match List.ofArray argv with
 
-    | [ "build" ] -> 
-        bundle ()
-
-    | [ "run" ] ->
-        clean ()
-        installClient ()
-        run ()
     
     | [ "add"; plugin ] ->
         if Config.checkPlugin plugin then
@@ -57,11 +44,17 @@ let main argv =
         else
             printfn "%s plugin not added" plugin
 
+    | [ "build" ] -> 
+        System.Diagnostics.Process.Start("fake", sprintf "build -t Build").WaitForExit()
+
     | [ "build"; plugin ] ->
         if Config.checkPlugin plugin then
             System.Diagnostics.Process.Start("fake", sprintf "build -t Build -- %s" plugin).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
+
+    | [ "run" ] ->
+        System.Diagnostics.Process.Start("fake", sprintf "build -t Run").WaitForExit()
 
     | [ "run"; plugin ] ->
         if Config.checkPlugin plugin then

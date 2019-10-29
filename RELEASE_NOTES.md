@@ -1,3 +1,7 @@
+#### 0.0.9 - 29.10.2019
+
+* Add SAFE.Core deploy build and run
+
 #### 0.0.8 - 25.10.2019
 
 * Add SAFE.Plugin.deploy
