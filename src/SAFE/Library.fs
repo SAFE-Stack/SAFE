@@ -56,14 +56,14 @@ module Core =
         |> Proc.run
         |> ignore
 
-    let clean () =
+    let clean (p: Fake.Core.TargetParameter) =
         [ deployDir
           clientDeployPath ]
         |> Shell.cleanDirs
 
     let directory = "."
 
-    let installClient () =
+    let installClient (p: Fake.Core.TargetParameter) =
         printfn "Node version:"
         runTool nodeTool "--version" directory
         printfn "Yarn version:"
@@ -99,7 +99,7 @@ module Core =
                 (Path.combine clientPath "Version.fs")
             runTool yarnTool "webpack-cli -p" directory
 
-    let bundle () =
+    let bundle (p: Fake.Core.TargetParameter) =
         let serverDir = Path.combine deployDir "Server"
         let clientDir = Path.combine deployDir "Client"
         let publicDir = Path.combine clientDir "public"

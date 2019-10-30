@@ -1,3 +1,7 @@
+#### 0.0.10 - 29.10.2019
+
+* Add SAFE.Core clean install and bundle
+
 #### 0.0.9 - 29.10.2019
 
 * Add SAFE.Core deploy build and run
