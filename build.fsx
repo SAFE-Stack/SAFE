@@ -22,11 +22,12 @@ let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
 let safeProj = "./src/SAFE/SAFE.fsproj"
 let dockerProj = "./src/SAFE.Docker/SAFE.Docker.fsproj"
 let azureAppServiceProj = "./src/SAFE.Azure.AppService/SAFE.Azure.AppService.fsproj"
-let projsToPack = 
+let projsToPackWithDotnet = 
     [ toolProj
       safeProj
-      dockerProj
-      azureAppServiceProj ]
+      dockerProj ]
+let projsToPackWithPaket =
+    [ azureAppServiceProj ]
 let toolBin = "./src/SAFE.Tool/bin"
 
 let toolObj = "./src/SAFE.Tool/obj"
@@ -47,7 +48,7 @@ Target.create "Pack" (fun _ ->
         sprintf "/p:PackageVersion=%s /p:PackageReleaseNotes=\"%s\""
             release.NugetVersion
             formattedRN
-    for proj in projsToPack do
+    for proj in projsToPackWithDotnet do
         DotNet.pack
             (fun args ->
                 { args with
@@ -55,6 +56,15 @@ Target.create "Pack" (fun _ ->
                     Common = { args.Common with CustomParams = Some customParams }
                 })
             proj
+    for proj in projsToPackWithPaket do
+        Paket.pack
+            (fun args ->
+                { args with
+                    OutputPath = nupkgDir
+                    WorkingDir = proj |> Path.getDirectory
+                    ToolPath = "paket"
+                    Version = release.NugetVersion
+                })
 )
 
 Target.create "Install" (fun _ ->

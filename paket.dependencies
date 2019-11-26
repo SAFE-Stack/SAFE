@@ -19,6 +19,7 @@ nuget Paket.Core
     nuget Fake.Core.Trace
     nuget Fake.IO.Zip
     github CompositionalIT/fshelpers src/FsHelpers/ArmHelper/ArmHelper.fs
+    nuget Microsoft.Azure.Management.ResourceManager.Fluent 1.4.1
 
 group Build
     framework: netstandard2.0

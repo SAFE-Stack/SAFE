@@ -2,9 +2,8 @@
 
 type ISAFEPlugin = interface end
 
-type ISAFERunnablePlugin =
+type ISAFEBuildablePlugin =
     abstract member Build : unit -> unit
-    abstract member Run : unit -> unit
 
 type ISAFEDeployablePlugin =
     abstract member Deploy : unit -> unit
@@ -87,7 +86,7 @@ module Core =
     let build (p: Fake.Core.TargetParameter) =
         match getPlugin p with
         | Some name ->
-            match loadPlugin<ISAFERunnablePlugin> name with
+            match loadPlugin<ISAFEBuildablePlugin> name with
             | Some p -> p.Build()
             | None -> printfn "Not runnable!"
         | None ->
@@ -110,35 +109,29 @@ module Core =
         Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
 
     let run (p: Fake.Core.TargetParameter) =
-        match getPlugin p with
-        | Some name ->
-            match loadPlugin<ISAFERunnablePlugin> name with
-            | Some p -> p.Run()
-            | None -> printfn "Not runnable!"
-        | None ->
-            let server = async {
-                runDotNet "watch run" serverPath
-            }
-            let client = async {
-                runTool yarnTool "webpack-dev-server" directory
-            }
-            let browser = async {
-                do! Async.Sleep 5000
-                openBrowser "http://localhost:8080"
-            }
+        let server = async {
+            runDotNet "watch run" serverPath
+        }
+        let client = async {
+            runTool yarnTool "webpack-dev-server" directory
+        }
+        let browser = async {
+            do! Async.Sleep 5000
+            openBrowser "http://localhost:8080"
+        }
 
-            let vsCodeSession = Environment.hasEnvironVar "vsCodeSession"
-            let safeClientOnly = Environment.hasEnvironVar "safeClientOnly"
+        let vsCodeSession = Environment.hasEnvironVar "vsCodeSession"
+        let safeClientOnly = Environment.hasEnvironVar "safeClientOnly"
 
-            let tasks =
-                [ if not safeClientOnly then yield server
-                  yield client
-                  if not vsCodeSession then yield browser ]
+        let tasks =
+            [ if not safeClientOnly then yield server
+              yield client
+              if not vsCodeSession then yield browser ]
 
-            tasks
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> ignore
+        tasks
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> ignore
 
     let deploy (p: Fake.Core.TargetParameter) =
         match getPlugin p with
@@ -146,6 +139,8 @@ module Core =
             match loadPlugin<ISAFEDeployablePlugin> name with
             | Some p -> p.Deploy ()
             | None -> printfn "Not deployable!"
+        | None ->
+            printfn "Deploy must be invoked for a plugin!"
 
 type Config =
     { Plugins : string list }
