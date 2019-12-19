@@ -1,6 +1,9 @@
 ﻿module SAFE.Tool
 
 open System
+open System.IO
+
+open Fake.IO.Globbing.Operators
 
 open SAFE.Core
 
@@ -12,6 +15,11 @@ let addPluginWithPaket (plugin : string) =
     printfn "Adding %s package to Paket %s group..."  package paketGroup
     paket.Add(Some paketGroup, package)
     printfn "Package %s added to Paket %s group" package paketGroup
+    let contentFiles = !! (sprintf "packages/build/SAFE.%s/Content/**.*" plugin)
+    for file in contentFiles do
+        let dest = Path.GetFileName file |> Path.GetFullPath
+        printfn "Copying %s to %s" file dest
+        File.Copy(file, dest)
 
 let removePluginWithPaket (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
