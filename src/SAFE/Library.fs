@@ -38,6 +38,18 @@ module Core =
         |> CreateProcess.ensureExitCode
         |> Proc.run
         |> ignore
+
+    let runToolWithOutput cmd args workingDir =
+        let arguments = args |> String.split ' ' |> Arguments.OfArgs
+        let result =
+            Command.RawCommand (cmd, arguments)
+            |> CreateProcess.fromCommand
+            |> CreateProcess.withWorkingDirectory workingDir
+            |> CreateProcess.ensureExitCode
+            |> CreateProcess.redirectOutput
+            |> Proc.run
+        result.Result.Output |> (fun s -> s.TrimEnd())
+
     let serverPath = Path.getFullName "./src/Server"
     let clientPath = Path.getFullName "./src/Client"
     let clientDeployPath = Path.combine clientPath "deploy"

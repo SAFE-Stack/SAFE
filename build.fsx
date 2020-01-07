@@ -21,11 +21,13 @@ let toolName = "SAFE.Tool"
 let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
 let safeProj = "./src/SAFE/SAFE.fsproj"
 let dockerProj = "./src/SAFE.Docker/SAFE.Docker.fsproj"
+let herokuProj = "./src/SAFE.Heroku/SAFE.Heroku.fsproj"
 let azureAppServiceProj = "./src/SAFE.Azure.AppService/SAFE.Azure.AppService.fsproj"
 let projsToPackWithDotnet = 
     [ toolProj
       safeProj
-      dockerProj ]
+      dockerProj
+      herokuProj ]
 let projsToPackWithPaket =
     [ azureAppServiceProj ]
 let toolBin = "./src/SAFE.Tool/bin"
