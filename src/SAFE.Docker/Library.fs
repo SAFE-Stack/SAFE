@@ -7,24 +7,10 @@ open Fake.IO
 open SAFE.Core
 
 type Docker() =
-
-    let dockerfileContents = """FROM microsoft/dotnet:2.2-aspnetcore-runtime-alpine
-    COPY /deploy /
-    WORKDIR /Server
-    EXPOSE 8085
-    ENTRYPOINT [ "dotnet", "Server.dll" ]
-    """
-
-    let createDockerfile () : IO.FileInfo =
-        let tmpPath = IO.Path.GetTempPath()
-        let dockerfile = Path.combine tmpPath "SAFE.Tool.Dockerfile"
-        if not (File.exists dockerfile) then
-            File.writeString false dockerfile dockerfileContents
-        IO.FileInfo dockerfile
+    inherit SAFEPlugin()
 
     let buildDocker tag =
-        let fi = createDockerfile ()
-        let args = sprintf "build -f %s -t %s ." fi.FullName tag
+        let args = sprintf "build -t %s ." tag
         runTool "docker" args "."
 
     let dockerUser = "safe-template"
@@ -33,8 +19,6 @@ type Docker() =
 
     let docker () =
         buildDocker dockerFullName
-
-    interface ISAFEPlugin
 
     interface ISAFEBuildablePlugin with
         member this.Build () = 

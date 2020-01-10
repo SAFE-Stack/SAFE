@@ -26,6 +26,7 @@ type TimeoutWebClient() =
         request
 
 type AppService() =
+    inherit SAFEPlugin()
 
     let mutable deploymentOutputs : ArmOutput option = None
 

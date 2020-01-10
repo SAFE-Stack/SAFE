@@ -20,8 +20,15 @@ let addPluginWithPaket (plugin : string) =
         let dest = Path.GetFileName file |> Path.GetFullPath
         printfn "Copying %s to %s" file dest
         File.Copy(file, dest)
+    System.Diagnostics.Process.Start("fake", sprintf "build -t PluginCommand -- %s %s" plugin "AfterPluginAdded").WaitForExit()
 
 let removePluginWithPaket (plugin : string) =
+    System.Diagnostics.Process.Start("fake", sprintf "build -t PluginCommand -- %s %s" plugin "BeforePluginRemoved").WaitForExit()
+    let contentFiles = !! (sprintf "packages/build/SAFE.%s/Content/**.*" plugin)
+    for file in contentFiles do
+        let path = Path.GetFileName file |> Path.GetFullPath
+        printfn "Removing %s" path
+        File.Delete(path)
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let paket = Paket.Dependencies.Locate()
     let package = sprintf "SAFE.%s" capital

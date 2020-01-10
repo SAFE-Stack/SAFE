@@ -1,6 +1,12 @@
 ﻿namespace SAFE
 
-type ISAFEPlugin = interface end
+[<AbstractClass>]
+type SAFEPlugin() = 
+    abstract member AfterPluginAdded: unit -> unit
+    abstract member BeforePluginRemoved: unit -> unit
+
+    default __.AfterPluginAdded () = ()
+    default __.BeforePluginRemoved () = ()
 
 type ISAFEBuildablePlugin =
     abstract member Build : unit -> unit
@@ -165,14 +171,18 @@ module Core =
     let pluginCommand (p: Fake.Core.TargetParameter) =
         match getPlugin p, getCommand p with
         | Some name, Some methodName ->
-            match loadPlugin<ISAFEPlugin> name with
+            match loadPlugin<SAFEPlugin> name with
             | Some p -> 
-                let typ = p.GetType()
-                let method = typ.GetMethod methodName
-                if method <> null then
-                    method.Invoke(p, null) |> ignore
-                else
-                    printfn "No %s method found for %s plugin" methodName name
+                match methodName with
+                | "AfterPluginAdded" -> p.AfterPluginAdded()
+                | "BeforePluginRemoved" -> p.BeforePluginRemoved()
+                | _ ->
+                    let typ = p.GetType()
+                    let method = typ.GetMethod methodName
+                    if method <> null then
+                        method.Invoke(p, null) |> ignore
+                    else
+                        printfn "No %s method found for %s plugin" methodName name
             | None -> printfn "Not a plugin!"
         | _ ->
             printfn "PluginCommand must be invoked for a plugin and command!"

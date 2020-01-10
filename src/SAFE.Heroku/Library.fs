@@ -6,6 +6,8 @@ open SAFE
 open SAFE.Core
 
 type Heroku () =
+    inherit SAFEPlugin()
+
     let sourceDir = "."
 
     let configure () =
@@ -24,22 +26,16 @@ type Heroku () =
         runTool gitTool "add ." sourceDir
         runTool gitTool "commit -m initial" sourceDir
 
-    let procfile () =
-        let procFile = "web: cd ./deploy/Server/ && dotnet ./Server.dll"
-        File.writeNew "Procfile" [procFile]
-
     let deploy () =
         let gitTool = platformTool "git" "git.exe"
         runTool gitTool "push heroku master" sourceDir
         let herokuTool = platformTool "heroku" "heroku.cmd"
         runTool herokuTool "open" sourceDir
 
-    member __.Configure() =
+    override __.AfterPluginAdded() =
+        base.AfterPluginAdded()
         configure ()
-
-    interface ISAFEPlugin
 
     interface ISAFEDeployablePlugin with
         member this.Deploy () =
-            procfile()
             deploy()

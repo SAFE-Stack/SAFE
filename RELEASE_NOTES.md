@@ -1,3 +1,7 @@
+#### 0.0.11 - 10.01.2020
+
+* SAFEPlugin as abstract class
+
 #### 0.0.10 - 29.10.2019
 
 * Add SAFE.Core clean install and bundle
