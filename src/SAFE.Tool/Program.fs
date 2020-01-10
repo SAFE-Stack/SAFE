@@ -75,6 +75,12 @@ let main argv =
             System.Diagnostics.Process.Start("fake", sprintf "build -t Deploy -- %s" plugin).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
+    
+    | [ plugin; command ] ->
+        if Config.checkPlugin plugin then
+            System.Diagnostics.Process.Start("fake", sprintf "build -t PluginCommand -- %s %s" plugin command).WaitForExit()
+        else
+            printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | _ -> 
         printfn """Usage: safe [command] 

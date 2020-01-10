@@ -88,7 +88,15 @@ module Core =
             sprintf "SAFE.%s" capital |> Some
         with _ -> None
 
+    let getCommand (p: Fake.Core.TargetParameter) =
+        try
+            let plugin = p.Context.Arguments |> List.tail |> List.head
+            let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+            Some capital
+        with _ -> None
+
     let loadPlugin<'a> (name: string) : 'a option =
+        printfn "--> loading %s" name
         let assembly = System.Reflection.Assembly.Load name
         let pluginType = typeof<'a>
         assembly.GetTypes()
@@ -153,6 +161,21 @@ module Core =
             | None -> printfn "Not deployable!"
         | None ->
             printfn "Deploy must be invoked for a plugin!"
+
+    let pluginCommand (p: Fake.Core.TargetParameter) =
+        match getPlugin p, getCommand p with
+        | Some name, Some methodName ->
+            match loadPlugin<ISAFEPlugin> name with
+            | Some p -> 
+                let typ = p.GetType()
+                let method = typ.GetMethod methodName
+                if method <> null then
+                    method.Invoke(p, null) |> ignore
+                else
+                    printfn "No %s method found for %s plugin" methodName name
+            | None -> printfn "Not a plugin!"
+        | _ ->
+            printfn "PluginCommand must be invoked for a plugin and command!"
 
 type Config =
     { Plugins : string list }

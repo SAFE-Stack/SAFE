@@ -34,8 +34,12 @@ type Heroku () =
         let herokuTool = platformTool "heroku" "heroku.cmd"
         runTool herokuTool "open" sourceDir
 
+    member __.Configure() =
+        configure ()
+
+    interface ISAFEPlugin
+
     interface ISAFEDeployablePlugin with
         member this.Deploy () =
-            configure()
             procfile()
             deploy()
