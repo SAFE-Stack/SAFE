@@ -59,6 +59,11 @@ Target.create "Pack" (fun _ ->
                 })
             proj
     for proj in projsToPackWithPaket do
+        DotNet.build
+            (fun args ->
+                { args with
+                    Configuration = DotNet.Release })
+            proj
         Paket.pack
             (fun args ->
                 { args with
