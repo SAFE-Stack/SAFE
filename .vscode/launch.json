@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/SAFE.Tool/bin/Debug/netcoreapp3.0/SAFE.Tool",
+            "args": [ "run" ],
+            "cwd": "~/sandbox/SAFE/fake_based",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}
