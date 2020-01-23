@@ -20,12 +20,16 @@ Target.initEnvironment ()
 let toolName = "SAFE.Tool"
 let toolProj = "./src/SAFE.Tool/SAFE.Tool.fsproj"
 let safeProj = "./src/SAFE/SAFE.fsproj"
+let clientProj = "./src/SAFE.Client/SAFE.Client.fsproj"
+let serverProj = "./src/SAFE.Server/SAFE.Server.fsproj"
 let dockerProj = "./src/SAFE.Docker/SAFE.Docker.fsproj"
 let herokuProj = "./src/SAFE.Heroku/SAFE.Heroku.fsproj"
 let azureAppServiceProj = "./src/SAFE.Azure.AppService/SAFE.Azure.AppService.fsproj"
 let projsToPackWithDotnet = 
     [ toolProj
-      safeProj ]
+      safeProj
+      clientProj
+      serverProj ]
 let projsToPackWithPaket =
     [ azureAppServiceProj
       herokuProj

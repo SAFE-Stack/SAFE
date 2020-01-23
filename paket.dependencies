@@ -1,5 +1,5 @@
 source https://api.nuget.org/v3/index.json
-framework: netcoreapp3.0, netstandard2.0
+framework: netcoreapp3.1, netstandard2.0
 
 nuget McMaster.NETCore.Plugins
 nuget FSharp.Core
@@ -20,6 +20,20 @@ nuget Paket.Core
     nuget Fake.IO.Zip
     github CompositionalIT/fshelpers src/FsHelpers/ArmHelper/ArmHelper.fs
     nuget Microsoft.Azure.Management.ResourceManager.Fluent 1.4.1
+
+//server
+    nuget FSharp.Core
+    nuget Saturn
+    nuget Thoth.Json.Giraffe
+
+//client
+    nuget Fable.Core ~> 3
+    nuget Fable.Elmish ~> 3
+    nuget Fable.Elmish.Debugger ~> 3
+    nuget Fable.Elmish.HMR ~> 4
+    nuget Fable.Elmish.React ~> 3
+    nuget Thoth.Fetch ~> 1
+    nuget Fable.React ~> 5
 
 group Build
     framework: netstandard2.0

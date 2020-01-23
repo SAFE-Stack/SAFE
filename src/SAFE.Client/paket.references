@@ -1,0 +1,7 @@
+FSharp.Core
+Fable.Core
+Fable.Elmish.Debugger
+Fable.Elmish.HMR
+Fable.Elmish.React
+Fable.React
+Thoth.Fetch
