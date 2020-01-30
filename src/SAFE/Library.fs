@@ -8,6 +8,10 @@ type SAFEPlugin() =
     default __.AfterPluginAdded () = ()
     default __.BeforePluginRemoved () = ()
 
+type ISAFEClientPlugin = interface end
+type ISAFEServerPlugin = interface end
+type ISAFESharedPlugin = interface end
+
 type ISAFEBuildablePlugin =
     abstract member Build : unit -> unit
 

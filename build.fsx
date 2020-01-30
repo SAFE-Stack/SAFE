@@ -29,11 +29,15 @@ let projsToPackWithDotnet =
     [ toolProj
       safeProj
       clientProj
-      serverProj ]
+      serverProj
+      "./src/SAFE.Remoting/SAFE.Remoting.fsproj" ]
 let projsToPackWithPaket =
     [ azureAppServiceProj
       herokuProj
-      dockerProj ]
+      dockerProj 
+      "./src/SAFE.Remoting.Client/SAFE.Remoting.Client.fsproj"
+      "./src/SAFE.Remoting.Server/SAFE.Remoting.Server.fsproj"
+      "./src/SAFE.Remoting.Shared/SAFE.Remoting.Shared.fsproj" ]
 let toolBin = "./src/SAFE.Tool/bin"
 
 let toolObj = "./src/SAFE.Tool/obj"

@@ -26,6 +26,8 @@ nuget Paket.Core
     nuget Saturn
     nuget Thoth.Json.Giraffe
 
+    nuget Fable.Remoting.Giraffe
+
 //client
     nuget Fable.Core ~> 3
     nuget Fable.Elmish ~> 3
@@ -34,6 +36,8 @@ nuget Paket.Core
     nuget Fable.Elmish.React ~> 3
     nuget Thoth.Fetch ~> 1
     nuget Fable.React ~> 5
+
+    nuget Fable.Remoting.Client
 
 group Build
     framework: netstandard2.0

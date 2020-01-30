@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="SAFE.Remoting.Client.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SAFE.Remoting.Shared\SAFE.Remoting.Shared.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
