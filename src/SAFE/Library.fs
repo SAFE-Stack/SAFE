@@ -19,9 +19,12 @@ type ISAFEDeployablePlugin =
     abstract member Deploy : unit -> unit
 
 module Core =
+    open System.IO
+
     open Fake.Core
     open Fake.DotNet
     open Fake.IO
+    open Fake.IO.Globbing.Operators
 
     let release = ReleaseNotes.load "RELEASE_NOTES.md"
 
@@ -172,14 +175,46 @@ module Core =
         | None ->
             printfn "Deploy must be invoked for a plugin!"
 
+    open System.Xml.Linq
+    open System.Xml.XPath
+
+    let addContentFiles package =
+        let contentFiles = !! (sprintf "packages/%s/Content/**.*" package)
+        for file in contentFiles do
+            let sharedProjDir = Path.combine "src" "Shared"
+            let dest = Path.combine sharedProjDir (Path.GetFileName file)
+            printfn "Copying %s to %s" file dest
+            File.Copy(file, dest)
+            printfn "Adding %s to Shared.fsproj" (Path.GetFileName file)
+            let xdoc = Path.combine sharedProjDir "Shared.fsproj" |> XDocument.Load
+            let xn = XName.op_Implicit
+            let node = XElement(xn "Compile", XAttribute(xn "Include", Path.GetFileName file))
+            let lastCompileNode = xdoc.XPathSelectElements "//Compile" |> Seq.last
+            lastCompileNode.AddAfterSelf node
+            xdoc.Save (Path.combine sharedProjDir "Shared.fsproj")
+
+    let addSharedPlugin (plugin : string) =
+        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+        let paket = Paket.Dependencies.Locate()
+        let package = sprintf "%s.Shared" capital
+        let paketGroup = "main"
+        printfn "Adding %s package to Paket %s group..."  package paketGroup
+        paket.Add(Some paketGroup, package)
+        printfn "Package %s added to Paket %s group" package paketGroup
+        addContentFiles package
+
     let pluginCommand (p: Fake.Core.TargetParameter) =
         match getPlugin p, getCommand p with
         | Some name, Some methodName ->
             match loadPlugin<SAFEPlugin> name with
             | Some p -> 
                 match methodName with
-                | "AfterPluginAdded" -> p.AfterPluginAdded()
-                | "BeforePluginRemoved" -> p.BeforePluginRemoved()
+                | "AfterPluginAdded" -> 
+                    p.AfterPluginAdded()
+                    if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
+                        addSharedPlugin(name)
+                | "BeforePluginRemoved" -> 
+                    p.BeforePluginRemoved()
                 | _ ->
                     let typ = p.GetType()
                     let method = typ.GetMethod methodName

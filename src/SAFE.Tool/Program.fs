@@ -11,11 +11,11 @@ let addPluginWithPaket (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let paket = Paket.Dependencies.Locate()
     let package = sprintf "SAFE.%s" capital
-    let paketGroup = "build"
+    let paketGroup = "main"
     printfn "Adding %s package to Paket %s group..."  package paketGroup
     paket.Add(Some paketGroup, package)
     printfn "Package %s added to Paket %s group" package paketGroup
-    let contentFiles = !! (sprintf "packages/build/SAFE.%s/Content/**.*" plugin)
+    let contentFiles = !! (sprintf "packages/SAFE.%s/Content/**.*" plugin)
     for file in contentFiles do
         let dest = Path.GetFileName file |> Path.GetFullPath
         printfn "Copying %s to %s" file dest
@@ -88,6 +88,9 @@ let main argv =
             System.Diagnostics.Process.Start("fake", sprintf "build -t PluginCommand -- %s %s" plugin command).WaitForExit()
         else
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
+
+    | [ "test" ] ->
+        SAFE.Core.addContentFiles "SAFE.Remoting.Shared"
 
     | _ -> 
         printfn """Usage: safe [command] 
