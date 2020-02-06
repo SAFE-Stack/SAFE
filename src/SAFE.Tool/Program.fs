@@ -90,7 +90,7 @@ let main argv =
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "test" ] ->
-        SAFE.Core.addContentFiles "SAFE.Remoting.Shared"
+        SAFE.Core.addContentFiles "SAFE.Remoting" "Shared"
 
     | _ -> 
         printfn """Usage: safe [command] 

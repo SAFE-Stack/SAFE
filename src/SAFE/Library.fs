@@ -178,30 +178,31 @@ module Core =
     open System.Xml.Linq
     open System.Xml.XPath
 
-    let addContentFiles package =
-        let contentFiles = !! (sprintf "packages/%s/Content/**.*" package)
+    let addContentFiles plugin _component =
+        let contentFiles = !! (sprintf "packages/%s.%s/Content/**.*" plugin _component)
         for file in contentFiles do
-            let sharedProjDir = Path.combine "src" "Shared"
-            let dest = Path.combine sharedProjDir (Path.GetFileName file)
+            let projDir = Path.combine "src" _component
+            let fsprojPath = Path.combine projDir (_component + ".fsproj")
+            let dest = Path.combine projDir (Path.GetFileName file)
             printfn "Copying %s to %s" file dest
             File.Copy(file, dest)
-            printfn "Adding %s to Shared.fsproj" (Path.GetFileName file)
-            let xdoc = Path.combine sharedProjDir "Shared.fsproj" |> XDocument.Load
+            printfn "Adding %s to %s" fsprojPath (Path.GetFileName file)
+            let xdoc = XDocument.Load fsprojPath 
             let xn = XName.op_Implicit
             let node = XElement(xn "Compile", XAttribute(xn "Include", Path.GetFileName file))
             let lastCompileNode = xdoc.XPathSelectElements "//Compile" |> Seq.last
-            lastCompileNode.AddAfterSelf node
-            xdoc.Save (Path.combine sharedProjDir "Shared.fsproj")
+            lastCompileNode.AddBeforeSelf node
+            xdoc.Save fsprojPath
 
-    let addSharedPlugin (plugin : string) =
+    let addComponentPlugn (plugin : string) _component =
         let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
         let paket = Paket.Dependencies.Locate()
-        let package = sprintf "%s.Shared" capital
+        let package = sprintf "%s.%s" capital _component
         let paketGroup = "main"
         printfn "Adding %s package to Paket %s group..."  package paketGroup
         paket.Add(Some paketGroup, package)
         printfn "Package %s added to Paket %s group" package paketGroup
-        addContentFiles package
+        addContentFiles capital _component
 
     let pluginCommand (p: Fake.Core.TargetParameter) =
         match getPlugin p, getCommand p with
@@ -212,7 +213,11 @@ module Core =
                 | "AfterPluginAdded" -> 
                     p.AfterPluginAdded()
                     if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
-                        addSharedPlugin(name)
+                        addComponentPlugn name "Shared"
+                    if typeof<ISAFEClientPlugin>.IsAssignableFrom (p.GetType()) then
+                        addComponentPlugn name "Client"
+                    if typeof<ISAFEServerPlugin>.IsAssignableFrom (p.GetType()) then
+                        addComponentPlugn name "Server"
                 | "BeforePluginRemoved" -> 
                     p.BeforePluginRemoved()
                 | _ ->
