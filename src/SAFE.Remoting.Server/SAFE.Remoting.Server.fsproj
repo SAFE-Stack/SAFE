@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="SAFE.Remoting.Server.fs" />
+    <Compile Condition="'$(Configuration)' == 'Debug'" Include="SAFE.Remoting.Server.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SAFE.Remoting.Shared\SAFE.Remoting.Shared.fsproj" />

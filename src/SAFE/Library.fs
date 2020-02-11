@@ -200,7 +200,7 @@ module Core =
         let package = sprintf "%s.%s" capital _component
         let paketGroup = "main"
         printfn "Adding %s package to Paket %s group..."  package paketGroup
-        paket.Add(Some paketGroup, package)
+        paket.AddToProject(Some paketGroup, package, "", false, false, false, false, sprintf "src/%s/%s.fsproj" _component _component, true, Paket.SemVerUpdateMode.NoRestriction, false)
         printfn "Package %s added to Paket %s group" package paketGroup
         addContentFiles capital _component
 

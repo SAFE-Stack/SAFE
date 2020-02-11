@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="SAFE.Remoting.Client.fs" />
+    <Compile Condition="'$(Configuration)' == 'Debug'" Include="SAFE.Remoting.Client.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SAFE.Remoting.Shared\SAFE.Remoting.Shared.fsproj" />
