@@ -193,8 +193,23 @@ module Core =
             let lastCompileNode = xdoc.XPathSelectElements "//Compile" |> Seq.last
             lastCompileNode.AddBeforeSelf node
             xdoc.Save fsprojPath
+    
+    let removeContentFiles plugin _component =
+        let contentFiles = !! (sprintf "packages/%s.%s/Content/**.*" plugin _component)
+        for file in contentFiles do
+            let projDir = Path.combine "src" _component
+            let fsprojPath = Path.combine projDir (_component + ".fsproj")
+            let dest = Path.combine projDir (Path.GetFileName file)
+            printfn "Removing %s from %s" dest fsprojPath
+            let xdoc = XDocument.Load fsprojPath 
+            let xn = XName.op_Implicit
+            let node = xdoc.XPathSelectElements (sprintf "//Compile[@Include='%s']" (Path.GetFileName file)) |> Seq.head
+            node.Remove()
+            xdoc.Save fsprojPath
+            printfn "Removing %s" dest
+            File.Delete(dest)
 
-    let addComponentPlugn (plugin : string) _component =
+    let addComponentPlugin (plugin : string) _component =
         let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
         let paket = Paket.Dependencies.Locate()
         let package = sprintf "%s.%s" capital _component
@@ -203,6 +218,13 @@ module Core =
         paket.AddToProject(Some paketGroup, package, "", false, false, false, false, sprintf "src/%s/%s.fsproj" _component _component, true, Paket.SemVerUpdateMode.NoRestriction, false)
         printfn "Package %s added to Paket %s group" package paketGroup
         addContentFiles capital _component
+
+    let removeComponentPlugin (plugin : string) _component =
+        let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
+        let paket = Paket.Dependencies.Locate()
+        let package = sprintf "%s.%s" capital _component
+        removeContentFiles capital _component
+        paket.Remove package
 
     let pluginCommand (p: Fake.Core.TargetParameter) =
         match getPlugin p, getCommand p with
@@ -213,13 +235,19 @@ module Core =
                 | "AfterPluginAdded" -> 
                     p.AfterPluginAdded()
                     if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
-                        addComponentPlugn name "Shared"
+                        addComponentPlugin name "Shared"
                     if typeof<ISAFEClientPlugin>.IsAssignableFrom (p.GetType()) then
-                        addComponentPlugn name "Client"
+                        addComponentPlugin name "Client"
                     if typeof<ISAFEServerPlugin>.IsAssignableFrom (p.GetType()) then
-                        addComponentPlugn name "Server"
+                        addComponentPlugin name "Server"
                 | "BeforePluginRemoved" -> 
                     p.BeforePluginRemoved()
+                    if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
+                        removeComponentPlugin name "Shared"
+                    if typeof<ISAFEClientPlugin>.IsAssignableFrom (p.GetType()) then
+                        removeComponentPlugin name "Client"
+                    if typeof<ISAFEServerPlugin>.IsAssignableFrom (p.GetType()) then
+                        removeComponentPlugin name "Server"
                 | _ ->
                     let typ = p.GetType()
                     let method = typ.GetMethod methodName

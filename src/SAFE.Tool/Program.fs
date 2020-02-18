@@ -32,7 +32,7 @@ let removePluginWithPaket (plugin : string) =
     let capital = plugin.Substring(0,1).ToUpper() + plugin.Substring(1)
     let paket = Paket.Dependencies.Locate()
     let package = sprintf "SAFE.%s" capital
-    let paketGroup = "build"
+    let paketGroup = "main"
     printfn "Removing %s package from Paket %s group..."  package paketGroup
     paket.Remove(Some paketGroup, package)
     printfn "Package %s removed from Paket %s group" package paketGroup
@@ -90,7 +90,7 @@ let main argv =
             printfn "%s plugin not added to this project, run `add %s`" plugin plugin
 
     | [ "test" ] ->
-        SAFE.Core.addComponentPlugn "SAFE.Remoting" "Server"
+        SAFE.Core.addComponentPlugin "SAFE.Remoting" "Server"
 
     | _ -> 
         printfn """Usage: safe [command] 
