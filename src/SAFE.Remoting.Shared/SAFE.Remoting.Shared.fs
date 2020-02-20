@@ -4,9 +4,11 @@
 let routeBuilder typeName methodName =
     sprintf "/api/%s/%s" typeName methodName
 
-type Counter = { Value : int }
+type Record =
+    { Value : int
+      Greeting : string }
 
 /// A type that specifies the communication protocol between client and server
 /// to learn more, read the docs at https://zaid-ajaj.github.io/Fable.Remoting/src/basics.html
-type ICounterApi =
-    { initialCounter : unit -> Async<Counter> }
+type IRemotingApi =
+    { getRecord : unit -> Async<Record> }

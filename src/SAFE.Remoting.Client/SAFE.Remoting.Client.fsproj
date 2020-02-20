@@ -8,6 +8,7 @@
     <Compile Condition="'$(Configuration)' == 'Debug'" Include="SAFE.Remoting.Client.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SAFE.Client\SAFE.Client.fsproj" />
     <ProjectReference Include="..\SAFE.Remoting.Shared\SAFE.Remoting.Shared.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
