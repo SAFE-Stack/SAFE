@@ -2,11 +2,13 @@
 
 [<AbstractClass>]
 type SAFEPlugin() = 
+    abstract member Snippets: list<string * list<string * string>>
     abstract member AfterPluginAdded: unit -> unit
     abstract member BeforePluginRemoved: unit -> unit
 
     default __.AfterPluginAdded () = ()
     default __.BeforePluginRemoved () = ()
+    default __.Snippets = []
 
 type ISAFEClientPlugin = interface end
 type ISAFEServerPlugin = interface end
@@ -226,6 +228,41 @@ module Core =
         removeContentFiles capital _component
         paket.Remove package
 
+    let addSnippets(p: SAFEPlugin) =
+        for (file, snippets) in p.Snippets do
+            let lines = System.IO.File.ReadAllLines file |> ResizeArray
+            for (regex, snippet) in snippets do
+                printf "File '%s': line matching regex /%s/: " file regex
+                try
+                    let regex = System.Text.RegularExpressions.Regex regex
+                    match Seq.tryFindIndex regex.IsMatch lines with
+                    | None -> printfn "not found!"
+                    | Some lineNo -> 
+                        printfn "%d" lineNo
+                        printfn "Inserting following snippet after: '%s'" snippet
+                        lines.Insert(lineNo + 1, snippet)
+                with e ->
+                    printfn "Exception: %O" e
+            printfn "Saving file '%s'" file
+            System.IO.File.WriteAllLines (file, lines)
+
+    let removeSnippets(p: SAFEPlugin) =
+        for (file, snippets) in p.Snippets do
+            let lines = System.IO.File.ReadAllLines file |> ResizeArray
+            for (_, snippet) in snippets do
+                printf "File '%s': line with snippet '%s': " file snippet
+                try
+                    match Seq.tryFindIndex ((=) snippet) lines with
+                    | None -> printfn "not found!"
+                    | Some lineNo -> 
+                        printfn "%d" lineNo
+                        printfn "Deleting the line"
+                        lines.RemoveAt(lineNo)
+                with e ->
+                    printfn "Exception: %O" e
+            printfn "Saving file '%s'" file
+            System.IO.File.WriteAllLines (file, lines)
+
     let pluginCommand (p: Fake.Core.TargetParameter) =
         match getPlugin p, getCommand p with
         | Some name, Some methodName ->
@@ -233,14 +270,16 @@ module Core =
             | Some p -> 
                 match methodName with
                 | "AfterPluginAdded" -> 
-                    p.AfterPluginAdded()
                     if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
                         addComponentPlugin name "Shared"
                     if typeof<ISAFEClientPlugin>.IsAssignableFrom (p.GetType()) then
                         addComponentPlugin name "Client"
                     if typeof<ISAFEServerPlugin>.IsAssignableFrom (p.GetType()) then
                         addComponentPlugin name "Server"
+                    addSnippets p
+                    p.AfterPluginAdded()
                 | "BeforePluginRemoved" -> 
+                    removeSnippets p
                     p.BeforePluginRemoved()
                     if typeof<ISAFESharedPlugin>.IsAssignableFrom (p.GetType()) then
                         removeComponentPlugin name "Shared"
