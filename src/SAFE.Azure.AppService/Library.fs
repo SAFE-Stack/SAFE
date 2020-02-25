@@ -83,3 +83,10 @@ type AppService() =
     interface ISAFEDeployablePlugin with
         member this.Deploy () =
             armTemplate ()
+            appService ()
+
+    interface ISAFEServerPlugin
+
+    override __.Snippets =
+        [ "src/Server/Server.fs", 
+            [ "application {", "        service_config SAFE.Azure.AppService.Server.configureAzure" ] ]

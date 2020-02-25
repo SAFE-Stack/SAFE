@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Condition="'$(Configuration)' == 'Debug'" Include="SAFE.Azure.AppService.Server.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SAFE.Server\SAFE.Server.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

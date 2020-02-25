@@ -33,6 +33,7 @@ let projsToPackWithDotnet =
       "./src/SAFE.Remoting/SAFE.Remoting.fsproj" ]
 let projsToPackWithPaket =
     [ azureAppServiceProj
+      "./src/SAFE.Azure.AppService.Server/SAFE.Azure.AppService.Server.fsproj"
       herokuProj
       dockerProj 
       "./src/SAFE.Remoting.Client/SAFE.Remoting.Client.fsproj"

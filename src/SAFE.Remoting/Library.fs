@@ -10,7 +10,7 @@ type Remoting () =
     interface ISAFEServerPlugin
     override __.Snippets =
         [ "src/Server/Server.fs", 
-            [ "^let webApp = router {", """    forward "/api" SAFE.Remoting.Server.httpHandler""" ]
+            [ "router {", """        forward "/api" SAFE.Remoting.Server.httpHandler""" ]
           "src/Client/Client.fs", 
             [ "^type Msg =", "    | RemotingMsg of SAFE.Remoting.Shared.Record"
               "^let init ()", "    let remotingCmd () = SAFE.Remoting.Client.createCmd RemotingMsg" ] ]

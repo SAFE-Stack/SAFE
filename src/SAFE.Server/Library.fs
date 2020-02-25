@@ -1,5 +1,18 @@
 ﻿namespace SAFE.Server
 
-module Say =
-    let hello name =
-        printfn "Hello %s" name
+open System
+
+module Environment =
+    let tryGetEnvVar (name: string) =
+        Environment.GetEnvironmentVariable name
+        |> function
+        | null
+        | "" -> None
+        | x -> Some x
+
+    let getEnvVar (name: string) (defaultValue: string) =
+        Environment.GetEnvironmentVariable name
+        |> function
+        | null
+        | "" -> defaultValue
+        | x -> x
